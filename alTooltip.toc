@@ -1,0 +1,6 @@
+## Interface: 30300
+## Title: alTooltip
+## Author: Allez
+## Notes: Tooltip styling
+
+alTooltip.lua
