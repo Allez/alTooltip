@@ -21,7 +21,11 @@ for _, v in pairs(tooltips) do
 	v:SetBackdropColor(0, 0, 0, 0.5)
 	v:SetBackdropBorderColor(0, 0, 0, 1)
 	v:SetScript("OnShow", function(self)
-		local item = select(2, self:GetItem())
+		local item
+		if self.GetItem then
+			item = select(2, self:GetItem())
+		end
+		self:SetBackdropColor(0, 0, 0, 0.5)
 		if item then
 			local quality = select(3, GetItemInfo(item))
 			if quality then
@@ -52,7 +56,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 	local unit = select(2, self:GetUnit())
 	if unit then
 		local unitClassification = UnitClassification(unit)
-		local difficultyColor = GetDifficultyColor(unitLevel)
+		local difficultyColor = GetQuestDifficultyColor(UnitLevel(unit))
 		if UnitIsPlayer(unit) then
 			local guild, rank = GetGuildInfo(unit)
 			if guild then
@@ -61,7 +65,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 		else
 			for i=2, GameTooltip:NumLines() do
 				if _G["GameTooltipTextLeft" .. i]:GetText():find(LEVEL) then
-					_G["GameTooltipTextLeft" .. i]:SetText(string.format(hex(difficultyColor.r, difficultyColor.g, difficultyColor.b).."%s|r", unitLevel) .. unitClassification .. UnitCreatureType(unit))
+					_G["GameTooltipTextLeft" .. i]:SetText(string.format(hex(difficultyColor.r, difficultyColor.g, difficultyColor.b).."%s|r", UnitLevel(unit)) .. unitClassification .. UnitCreatureType(unit))
 					break
 				end
 			end
@@ -126,7 +130,7 @@ hooksecurefunc("SetItemRef", function(link, text, button)
 	end
 	local type, id = string.match(link, "(%l+):(%d+)") 
 	if type == "item" then
-		iconFrame.icon:SetTexture(select(10, GetItemInfo(id))
+		iconFrame.icon:SetTexture(select(10, GetItemInfo(id)))
 		iconFrame:Show()
 	elseif type == "spell" then
 		iconFrame.icon:SetTexture(select(3, GetSpellInfo(id)))
