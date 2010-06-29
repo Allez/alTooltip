@@ -16,6 +16,13 @@ local tooltips = {
 	DropDownList2MenuBackdrop, 
 }
 
+local types = {
+	rare = " R ",
+	elite = " + ",
+	worldboss = " B ",
+	rareelite = " R+ ",
+}
+
 for _, v in pairs(tooltips) do
 	v:SetBackdrop(backdrop)
 	v:SetBackdropColor(0, 0, 0, 0.5)
@@ -65,7 +72,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 		else
 			for i=2, GameTooltip:NumLines() do
 				if _G["GameTooltipTextLeft" .. i]:GetText():find(LEVEL) then
-					_G["GameTooltipTextLeft" .. i]:SetText(string.format(hex(difficultyColor.r, difficultyColor.g, difficultyColor.b).."%s|r", UnitLevel(unit)) .. unitClassification .. UnitCreatureType(unit))
+					_G["GameTooltipTextLeft" .. i]:SetText(string.format(hex(difficultyColor.r, difficultyColor.g, difficultyColor.b).."%s|r", UnitLevel(unit)) .. types[unitClassification] or " " .. UnitCreatureType(unit))
 					break
 				end
 			end
@@ -115,7 +122,7 @@ end)
 local iconFrame = CreateFrame("Frame", nil, ItemRefTooltip)
 iconFrame:SetWidth(30)
 iconFrame:SetHeight(30)
-iconFrame:SetPoint("TOPRIGHT", ItemRefTooltip, "TOPLEFT", 0, 0)
+iconFrame:SetPoint("TOPRIGHT", ItemRefTooltip, "TOPLEFT", -3, 0)
 iconFrame:SetBackdrop(backdrop)
 iconFrame:SetBackdropColor(0, 0, 0, 0.5)
 iconFrame:SetBackdropBorderColor(0, 0, 0, 1)
