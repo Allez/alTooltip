@@ -1,4 +1,3 @@
-
 local backdrop = {
 	bgFile = [=[Interface\ChatFrame\ChatFrameBackground]=],
 	edgeFile = [=[Interface\ChatFrame\ChatFrameBackground]=], edgeSize = 1,
@@ -25,14 +24,14 @@ local types = {
 
 for _, v in pairs(tooltips) do
 	v:SetBackdrop(backdrop)
-	v:SetBackdropColor(0, 0, 0, 0.5)
+	v:SetBackdropColor(0, 0, 0, 0.6)
 	v:SetBackdropBorderColor(0, 0, 0, 1)
 	v:SetScript("OnShow", function(self)
 		local item
 		if self.GetItem then
 			item = select(2, self:GetItem())
 		end
-		self:SetBackdropColor(0, 0, 0, 0.5)
+		self:SetBackdropColor(0, 0, 0, 0.6)
 		if item then
 			local quality = select(3, GetItemInfo(item))
 			if quality then
@@ -62,8 +61,9 @@ end
 GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 	local unit = select(2, self:GetUnit())
 	if unit then
-		local unitClassification = UnitClassification(unit)
+		local unitClassification = types[UnitClassification(unit)] or " "
 		local difficultyColor = GetQuestDifficultyColor(UnitLevel(unit))
+		local creatureType = UnitCreatureType(unit) or ""
 		if UnitIsPlayer(unit) then
 			local guild, rank = GetGuildInfo(unit)
 			if guild then
@@ -72,7 +72,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 		else
 			for i=2, GameTooltip:NumLines() do
 				if _G["GameTooltipTextLeft" .. i]:GetText():find(LEVEL) then
-					_G["GameTooltipTextLeft" .. i]:SetText(string.format(hex(difficultyColor.r, difficultyColor.g, difficultyColor.b).."%s|r", UnitLevel(unit)) .. types[unitClassification] or " " .. UnitCreatureType(unit))
+					_G["GameTooltipTextLeft" .. i]:SetText(string.format(hex(difficultyColor.r, difficultyColor.g, difficultyColor.b).."%s|r", UnitLevel(unit)) .. unitClassification .. creatureType)
 					break
 				end
 			end
@@ -146,4 +146,10 @@ hooksecurefunc("SetItemRef", function(link, text, button)
 		iconFrame.icon:SetTexture(select(10, GetAchievementInfo(id)))
 		iconFrame:Show()
 	end
+end)
+
+hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
+	tooltip:SetOwner(parent, "ANCHOR_NONE")
+	tooltip:SetPoint("BOTTOMRIGHT", "UIParent", "BOTTOMRIGHT", -80, 180)
+	tooltip.default = 1
 end)
