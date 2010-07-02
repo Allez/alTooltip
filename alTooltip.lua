@@ -58,21 +58,80 @@ local truncate = function(value)
 	end
 end
 
+function GameTooltip_UnitColor(unit)
+	local r, g, b
+	if UnitPlayerControlled(unit) then
+		if UnitCanAttack(unit, "player") then
+			if not UnitCanAttack("player", unit) then
+				r = 1.0
+				g = 1.0
+				b = 1.0
+			else
+				r = FACTION_BAR_COLORS[2].r
+				g = FACTION_BAR_COLORS[2].g
+				b = FACTION_BAR_COLORS[2].b
+			end
+		elseif UnitCanAttack("player", unit) then
+			r = FACTION_BAR_COLORS[4].r
+			g = FACTION_BAR_COLORS[4].g
+			b = FACTION_BAR_COLORS[4].b
+		elseif UnitIsPVP(unit) then
+			r = FACTION_BAR_COLORS[6].r
+			g = FACTION_BAR_COLORS[6].g
+			b = FACTION_BAR_COLORS[6].b
+		else
+			r = 1.0
+			g = 1.0
+			b = 1.0
+		end
+	else
+		local reaction = UnitReaction(unit, "player")
+		if reaction then
+			r = FACTION_BAR_COLORS[reaction].r
+			g = FACTION_BAR_COLORS[reaction].g
+			b = FACTION_BAR_COLORS[reaction].b
+		else
+			r = 1.0
+			g = 1.0
+			b = 1.0
+		end
+	end
+	if UnitIsPlayer(unit) then
+		local class = select(2, UnitClass(unit))
+		if class then
+			r = RAID_CLASS_COLORS[class].r
+			g = RAID_CLASS_COLORS[class].g
+			b = RAID_CLASS_COLORS[class].b
+		end
+	end
+	return r, g, b
+end
+
 GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 	local unit = select(2, self:GetUnit())
 	if unit then
 		local unitClassification = types[UnitClassification(unit)] or " "
-		local difficultyColor = GetQuestDifficultyColor(UnitLevel(unit))
+		local diffColor = GetQuestDifficultyColor(UnitLevel(unit))
 		local creatureType = UnitCreatureType(unit) or ""
+		local unitName = UnitName(unit)
+		local unitLevel = UnitLevel(unit)
 		if UnitIsPlayer(unit) then
+			local unitRace = UnitRace(unit)
+			local unitClass = UnitClass(unit)
 			local guild, rank = GetGuildInfo(unit)
 			if guild then
 				GameTooltipTextLeft2:SetFormattedText(hex(0, 1, 1).."%s|r %s", guild, rank)
 			end
+			for i=2, GameTooltip:NumLines() do
+				if _G["GameTooltipTextLeft" .. i]:GetText():find(LEVEL) then
+					_G["GameTooltipTextLeft" .. i]:SetText(string.format(hex(diffColor.r, diffColor.g, diffColor.b).."%s|r ", unitLevel) .. unitRace)
+					break
+				end
+			end
 		else
 			for i=2, GameTooltip:NumLines() do
 				if _G["GameTooltipTextLeft" .. i]:GetText():find(LEVEL) then
-					_G["GameTooltipTextLeft" .. i]:SetText(string.format(hex(difficultyColor.r, difficultyColor.g, difficultyColor.b).."%s|r", UnitLevel(unit)) .. unitClassification .. creatureType)
+					_G["GameTooltipTextLeft" .. i]:SetText(string.format(hex(diffColor.r, diffColor.g, diffColor.b).."%s|r", unitLevel) .. unitClassification .. creatureType)
 					break
 				end
 			end
@@ -97,7 +156,12 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 	end
 end)
 
-GameTooltipStatusBar:SetScript("OnValueChanged", function(self, value)
+GameTooltipStatusBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
+GameTooltipStatusBar:SetHeight(6)
+GameTooltipStatusBar:ClearAllPoints()
+GameTooltipStatusBar:SetPoint("TOPLEFT", GameTooltip, "BOTTOMLEFT", 2, 8)
+GameTooltipStatusBar:SetPoint("TOPRIGHT", GameTooltip, "BOTTOMRIGHT", -2, 8)
+GameTooltipStatusBar:HookScript("OnValueChanged", function(self, value)
 	if not value then
 		return
 	end
