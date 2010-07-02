@@ -27,20 +27,10 @@ for _, v in pairs(tooltips) do
 	v:SetBackdropColor(0, 0, 0, 0.6)
 	v:SetBackdropBorderColor(0, 0, 0, 1)
 	v:SetScript("OnShow", function(self)
-		local item
-		if self.GetItem then
-			item = select(2, self:GetItem())
-		end
 		self:SetBackdropColor(0, 0, 0, 0.6)
-		if item then
-			local quality = select(3, GetItemInfo(item))
-			if quality then
-				local r, g, b = GetItemQualityColor(quality)
-				self:SetBackdropBorderColor(r, g, b)
-			end
-		else
-			self:SetBackdropBorderColor(0, 0, 0)
-		end
+	end)
+	v:HookScript("OnHide", function(self)
+		self:SetBackdropBorderColor(0, 0, 0, 1)
 	end)
 end
 
@@ -106,6 +96,19 @@ function GameTooltip_UnitColor(unit)
 	end
 	return r, g, b
 end
+
+GameTooltip:HookScript("OnTooltipSetItem", function(self)
+	local item = select(2, self:GetItem())
+	if item then
+		local rarity = select(3, GetItemInfo(item))
+		if rarity and rarity > 1 then
+			local r, g, b = GetItemQualityColor(rarity)
+			self:SetBackdropBorderColor(r, g, b)
+		end
+	else
+		self:SetBackdropBorderColor(0, 0, 0)
+	end
+end)
 
 GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 	local unit = select(2, self:GetUnit())
