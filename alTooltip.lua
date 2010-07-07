@@ -28,6 +28,19 @@ for _, v in pairs(tooltips) do
 	v:SetBackdropBorderColor(0, 0, 0, 1)
 	v:SetScript("OnShow", function(self)
 		self:SetBackdropColor(0, 0, 0, 0.6)
+		local item
+		if self.GetItem then
+			item = select(2, self:GetItem())
+		end
+		if item then
+			local quality = select(3, GetItemInfo(item))
+			if quality and quality > 1 then
+				local r, g, b = GetItemQualityColor(quality)
+				self:SetBackdropBorderColor(r, g, b)
+			end
+		else
+			self:SetBackdropBorderColor(0, 0, 0)
+		end
 	end)
 	v:HookScript("OnHide", function(self)
 		self:SetBackdropBorderColor(0, 0, 0, 1)
@@ -49,14 +62,10 @@ local truncate = function(value)
 end
 
 function GameTooltip_UnitColor(unit)
-	local r, g, b
+	local r, g, b = 1, 1, 1
 	if UnitPlayerControlled(unit) then
 		if UnitCanAttack(unit, "player") then
-			if not UnitCanAttack("player", unit) then
-				r = 1.0
-				g = 1.0
-				b = 1.0
-			else
+			if UnitCanAttack("player", unit) then
 				r = FACTION_BAR_COLORS[2].r
 				g = FACTION_BAR_COLORS[2].g
 				b = FACTION_BAR_COLORS[2].b
@@ -69,10 +78,6 @@ function GameTooltip_UnitColor(unit)
 			r = FACTION_BAR_COLORS[6].r
 			g = FACTION_BAR_COLORS[6].g
 			b = FACTION_BAR_COLORS[6].b
-		else
-			r = 1.0
-			g = 1.0
-			b = 1.0
 		end
 	else
 		local reaction = UnitReaction(unit, "player")
@@ -80,10 +85,6 @@ function GameTooltip_UnitColor(unit)
 			r = FACTION_BAR_COLORS[reaction].r
 			g = FACTION_BAR_COLORS[reaction].g
 			b = FACTION_BAR_COLORS[reaction].b
-		else
-			r = 1.0
-			g = 1.0
-			b = 1.0
 		end
 	end
 	if UnitIsPlayer(unit) then
@@ -97,19 +98,6 @@ function GameTooltip_UnitColor(unit)
 	return r, g, b
 end
 
-GameTooltip:HookScript("OnTooltipSetItem", function(self)
-	local item = select(2, self:GetItem())
-	if item then
-		local rarity = select(3, GetItemInfo(item))
-		if rarity and rarity > 1 then
-			local r, g, b = GetItemQualityColor(rarity)
-			self:SetBackdropBorderColor(r, g, b)
-		end
-	else
-		self:SetBackdropBorderColor(0, 0, 0)
-	end
-end)
-
 GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 	local unit = select(2, self:GetUnit())
 	if unit then
@@ -118,6 +106,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 		local creatureType = UnitCreatureType(unit) or ""
 		local unitName = UnitName(unit)
 		local unitLevel = UnitLevel(unit)
+		if unitLevel < 0 then unitLevel = '??' end
 		if UnitIsPlayer(unit) then
 			local unitRace = UnitRace(unit)
 			local unitClass = UnitClass(unit)
@@ -126,14 +115,14 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 				GameTooltipTextLeft2:SetFormattedText(hex(0, 1, 1).."%s|r %s", guild, rank)
 			end
 			for i=2, GameTooltip:NumLines() do
-				if _G["GameTooltipTextLeft" .. i]:GetText():find(LEVEL) then
+				if _G["GameTooltipTextLeft" .. i]:GetText():find(PLAYER) then
 					_G["GameTooltipTextLeft" .. i]:SetText(string.format(hex(diffColor.r, diffColor.g, diffColor.b).."%s|r ", unitLevel) .. unitRace)
 					break
 				end
 			end
 		else
 			for i=2, GameTooltip:NumLines() do
-				if _G["GameTooltipTextLeft" .. i]:GetText():find(LEVEL) then
+				if _G["GameTooltipTextLeft" .. i]:GetText():find(LEVEL) or _G["GameTooltipTextLeft" .. i]:GetText():find(creatureType) then
 					_G["GameTooltipTextLeft" .. i]:SetText(string.format(hex(diffColor.r, diffColor.g, diffColor.b).."%s|r", unitLevel) .. unitClassification .. creatureType)
 					break
 				end
@@ -154,16 +143,16 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 			else
 				text = hex(r, g, b)..UnitName(unit.."target").."|r"
 			end
-			self:AddLine("Target: "..text)
+			self:AddLine(TARGET..": "..text)
 		end
 	end
+	self:AddLine(" ")
 end)
 
 GameTooltipStatusBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
-GameTooltipStatusBar:SetHeight(6)
 GameTooltipStatusBar:ClearAllPoints()
-GameTooltipStatusBar:SetPoint("TOPLEFT", GameTooltip, "BOTTOMLEFT", 2, 8)
-GameTooltipStatusBar:SetPoint("TOPRIGHT", GameTooltip, "BOTTOMRIGHT", -2, 8)
+GameTooltipStatusBar:SetPoint("TOPLEFT", GameTooltip, "BOTTOMLEFT", 10, 18)
+GameTooltipStatusBar:SetPoint("TOPRIGHT", GameTooltip, "BOTTOMRIGHT", -10, 18)
 GameTooltipStatusBar:HookScript("OnValueChanged", function(self, value)
 	if not value then
 		return
@@ -183,6 +172,8 @@ GameTooltipStatusBar:HookScript("OnValueChanged", function(self, value)
 		self.text:Show()
 		local hp = truncate(min).." / "..truncate(max)
 		self.text:SetText(hp)
+	else
+		self.text:Hide()
 	end
 end)
 
