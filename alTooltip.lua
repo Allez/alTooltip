@@ -146,7 +146,6 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 			self:AddLine(TARGET..": "..text)
 		end
 	end
-	self:AddLine(" ")
 end)
 
 GameTooltipStatusBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
@@ -175,6 +174,9 @@ GameTooltipStatusBar:HookScript("OnValueChanged", function(self, value)
 	else
 		self.text:Hide()
 	end
+end)
+GameTooltipStatusBar:HookScript("OnShow", function(self)
+	GameTooltip:AddLine(" ")
 end)
 
 local iconFrame = CreateFrame("Frame", nil, ItemRefTooltip)
