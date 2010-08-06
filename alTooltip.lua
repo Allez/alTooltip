@@ -148,10 +148,17 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 	end
 end)
 
+GameTooltipStatusBar.bg = CreateFrame("Frame", nil, GameTooltipStatusBar)
+GameTooltipStatusBar.bg:SetPoint("TOPLEFT", GameTooltipStatusBar, "TOPLEFT", -1, 1)
+GameTooltipStatusBar.bg:SetPoint("BOTTOMRIGHT", GameTooltipStatusBar, "BOTTOMRIGHT", 1, -1)
+GameTooltipStatusBar.bg:SetFrameStrata("LOW")
+GameTooltipStatusBar.bg:SetBackdrop(backdrop)
+GameTooltipStatusBar.bg:SetBackdropColor(0, 0, 0, 0.5)
+GameTooltipStatusBar.bg:SetBackdropBorderColor(0, 0, 0, 1)
 GameTooltipStatusBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
 GameTooltipStatusBar:ClearAllPoints()
-GameTooltipStatusBar:SetPoint("TOPLEFT", GameTooltip, "BOTTOMLEFT", 10, 18)
-GameTooltipStatusBar:SetPoint("TOPRIGHT", GameTooltip, "BOTTOMRIGHT", -10, 18)
+GameTooltipStatusBar:SetPoint("TOPLEFT", GameTooltip, "BOTTOMLEFT", 1, 0)
+GameTooltipStatusBar:SetPoint("TOPRIGHT", GameTooltip, "BOTTOMRIGHT", -1, 0)
 GameTooltipStatusBar:HookScript("OnValueChanged", function(self, value)
 	if not value then
 		return
@@ -175,9 +182,7 @@ GameTooltipStatusBar:HookScript("OnValueChanged", function(self, value)
 		self.text:Hide()
 	end
 end)
-GameTooltipStatusBar:HookScript("OnShow", function(self)
-	GameTooltip:AddLine(" ")
-end)
+
 
 local iconFrame = CreateFrame("Frame", nil, ItemRefTooltip)
 iconFrame:SetWidth(30)
