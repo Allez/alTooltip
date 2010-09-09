@@ -2,5 +2,6 @@
 ## Title: alTooltip
 ## Author: Allez
 ## Notes: Tooltip styling
+## Version 30300.1
 
 alTooltip.lua
