@@ -215,6 +215,6 @@ end)
 
 hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
 	tooltip:SetOwner(parent, "ANCHOR_NONE")
-	tooltip:SetPoint("BOTTOMRIGHT", "UIParent", "BOTTOMRIGHT", -80, 180)
+	tooltip:SetPoint("BOTTOMRIGHT", "UIParent", "BOTTOMRIGHT", -12, 180)
 	tooltip.default = 1
 end)
