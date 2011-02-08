@@ -3,5 +3,6 @@
 ## Author: Allez
 ## Notes: Tooltip styling
 ## Version: 40000.1
+## OptionalDeps: alInterface
 
 alTooltip.lua

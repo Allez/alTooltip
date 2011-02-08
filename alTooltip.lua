@@ -1,3 +1,22 @@
+
+-- Config start
+local anchor = "BOTTOMRIGHT"
+local x, y = -12, 180
+local anchorcursor = false
+-- Config end
+
+local config = {
+	["Anchor cursor"] = anchorcursor,
+}
+if UIConfig then
+	UIConfig["Tooltip"] = config
+end
+
+local anchorframe = CreateFrame("Frame", "Tooltip anchor", UIParent)
+anchorframe:SetSize(150, 20)
+anchorframe:SetPoint(anchor, x, y)
+if UIMovableFrames then tinsert(UIMovableFrames, anchorframe) end
+
 local backdrop = {
 	bgFile = [=[Interface\ChatFrame\ChatFrameBackground]=],
 	edgeFile = [=[Interface\ChatFrame\ChatFrameBackground]=], edgeSize = 1,
@@ -5,15 +24,20 @@ local backdrop = {
 }
 
 local tooltips = {
-	GameTooltip, 
+	GameTooltip,
 	ItemRefTooltip, 
 	ShoppingTooltip1, 
 	ShoppingTooltip2, 
 	ShoppingTooltip3, 
 	WorldMapTooltip, 
-	DropDownList1MenuBackdrop, 
-	DropDownList2MenuBackdrop, 
+--	DropDownList1MenuBackdrop, 
+--	DropDownList2MenuBackdrop, 
 }
+
+if not IsAddOnLoaded("Aurora") then 
+	tinsert(tooltips, DropDownList1MenuBackdrop)
+	tinsert(tooltips, DropDownList2MenuBackdrop)
+end
 
 local types = {
 	rare = " R ",
@@ -22,12 +46,22 @@ local types = {
 	rareelite = " R+ ",
 }
 
+local CreateBG = CreateBG or function(parent)
+	local bg = CreateFrame("Frame", nil, parent)
+	bg:SetPoint("TOPLEFT", -1, 1)
+	bg:SetPoint("BOTTOMRIGHT", 1, -1)
+	bg:SetFrameLevel(parent:GetFrameLevel() - 1)
+	bg:SetBackdrop(backdrop)
+	bg:SetBackdropColor(0, 0, 0, 0.5)
+	bg:SetBackdropBorderColor(0, 0, 0, 1)
+	return bg
+end
+
 for _, v in pairs(tooltips) do
-	v:SetBackdrop(backdrop)
-	v:SetBackdropColor(0, 0, 0, 0.6)
-	v:SetBackdropBorderColor(0, 0, 0, 1)
+	v:SetBackdrop(nil)
+	v.bg = CreateBG(v)
 	v:SetScript("OnShow", function(self)
-		self:SetBackdropColor(0, 0, 0, 0.6)
+		self.bg:SetBackdropColor(0, 0, 0, 0.8)
 		local item
 		if self.GetItem then
 			item = select(2, self:GetItem())
@@ -36,14 +70,14 @@ for _, v in pairs(tooltips) do
 			local quality = select(3, GetItemInfo(item))
 			if quality and quality > 1 then
 				local r, g, b = GetItemQualityColor(quality)
-				self:SetBackdropBorderColor(r, g, b)
+				self.bg:SetBackdropBorderColor(r, g, b)
 			end
 		else
-			self:SetBackdropBorderColor(0, 0, 0)
+			self.bg:SetBackdropBorderColor(0.4, 0.4, 0.4)
 		end
 	end)
 	v:HookScript("OnHide", function(self)
-		self:SetBackdropBorderColor(0, 0, 0, 1)
+		self.bg:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
 	end)
 end
 
@@ -148,17 +182,12 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 	end
 end)
 
-GameTooltipStatusBar.bg = CreateFrame("Frame", nil, GameTooltipStatusBar)
-GameTooltipStatusBar.bg:SetPoint("TOPLEFT", GameTooltipStatusBar, "TOPLEFT", -1, 1)
-GameTooltipStatusBar.bg:SetPoint("BOTTOMRIGHT", GameTooltipStatusBar, "BOTTOMRIGHT", 1, -1)
-GameTooltipStatusBar.bg:SetFrameLevel(GameTooltipStatusBar:GetFrameLevel()-1)
-GameTooltipStatusBar.bg:SetBackdrop(backdrop)
-GameTooltipStatusBar.bg:SetBackdropColor(0, 0, 0, 0.5)
-GameTooltipStatusBar.bg:SetBackdropBorderColor(0, 0, 0, 1)
+GameTooltipStatusBar.bg = CreateBG(GameTooltipStatusBar)
 GameTooltipStatusBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
 GameTooltipStatusBar:ClearAllPoints()
-GameTooltipStatusBar:SetPoint("TOPLEFT", GameTooltip, "BOTTOMLEFT", 1, 0)
-GameTooltipStatusBar:SetPoint("TOPRIGHT", GameTooltip, "BOTTOMRIGHT", -1, 0)
+GameTooltipStatusBar:SetPoint("TOPLEFT", GameTooltip, "BOTTOMLEFT", 0, -5)
+GameTooltipStatusBar:SetPoint("TOPRIGHT", GameTooltip, "BOTTOMRIGHT", 0, -5)
+GameTooltipStatusBar:SetHeight(7)
 GameTooltipStatusBar:HookScript("OnValueChanged", function(self, value)
 	if not value then
 		return
@@ -172,8 +201,8 @@ GameTooltipStatusBar:HookScript("OnValueChanged", function(self, value)
 		min, max = UnitHealth(unit), UnitHealthMax(unit)
 		if not self.text then
 			self.text = self:CreateFontString(nil, "OVERLAY")
-			self.text:SetPoint("CENTER", GameTooltipStatusBar)
-			self.text:SetFont(GameFontNormal:GetFont(), 11, "THINOUTLINE")
+			self.text:SetPoint("CENTER", GameTooltipStatusBar, 0, 1)
+			self.text:SetFont('Fonts\\VisitorR.TTF', 10, "OUTLINEMONOCHROME")
 		end
 		self.text:Show()
 		local hp = truncate(min).." / "..truncate(max)
@@ -185,15 +214,11 @@ end)
 
 
 local iconFrame = CreateFrame("Frame", nil, ItemRefTooltip)
-iconFrame:SetWidth(30)
-iconFrame:SetHeight(30)
-iconFrame:SetPoint("TOPRIGHT", ItemRefTooltip, "TOPLEFT", -3, 0)
-iconFrame:SetBackdrop(backdrop)
-iconFrame:SetBackdropColor(0, 0, 0, 0.5)
-iconFrame:SetBackdropBorderColor(0, 0, 0, 1)
+iconFrame:SetSize(28, 28)
+iconFrame:SetPoint("TOPRIGHT", ItemRefTooltip, "TOPLEFT", -5, 0)
+iconFrame.bg = CreateBG(iconFrame)
 iconFrame.icon = iconFrame:CreateTexture(nil, "BACKGROUND")
-iconFrame.icon:SetPoint("TOPLEFT", 1, -1)
-iconFrame.icon:SetPoint("BOTTOMRIGHT", -1, 1)
+iconFrame.icon:SetAllPoints()
 iconFrame.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
 
 hooksecurefunc("SetItemRef", function(link, text, button)
@@ -214,7 +239,11 @@ hooksecurefunc("SetItemRef", function(link, text, button)
 end)
 
 hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
-	tooltip:SetOwner(parent, "ANCHOR_NONE")
-	tooltip:SetPoint("BOTTOMRIGHT", "UIParent", "BOTTOMRIGHT", -12, 180)
+	if not config["Anchor cursor"] then
+		tooltip:SetOwner(parent, "ANCHOR_NONE")
+		tooltip:SetPoint("BOTTOMRIGHT", anchorframe, 0, 0)
+	else
+		tooltip:SetOwner(parent, "ANCHOR_CURSOR")
+	end
 	tooltip.default = 1
 end)
